@@ -398,6 +398,24 @@ async function loadEncryptedTestDatabase() {
 
     
 const fileId = result.files[0].id;
+   
+const metadataResponse = await fetch(
+  'https://www.googleapis.com/drive/v3/files/' +
+  encodeURIComponent(fileId) +
+  '?fields=id,version,modifiedTime',
+  {
+    headers: {
+      Authorization: 'Bearer ' + googleAccessToken
+    }
+  }
+);
+
+if (!metadataResponse.ok) {
+  throw new Error('Dateiversion konnte nicht ermittelt werden.');
+}
+
+const fileMetadata = await metadataResponse.json();
+
 
 
     const fileResponse = await fetch(
@@ -436,8 +454,10 @@ if (dirty && !confirm(
 db = decrypted;
 dirty = false;
    
+
 googleDriveFileId = fileId;
-googleDriveVersion = null;
+googleDriveVersion = fileMetadata.version;
+
 
 fileHandle = null;
 
