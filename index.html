@@ -85,5 +85,41 @@ async function ocrPdf(file){if(!window.pdfjsLib)throw Error('PDF-Bibliothek konn
 $('runOCR').onclick=async()=>{let file=$('ocrFile').files[0];if(!file)return alert('Bitte eine Rechnung als PDF oder Bild auswählen.');if(!window.Tesseract)return alert('OCR-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen und Seite neu öffnen.');let button=$('runOCR');button.disabled=true;$('ocrResult').classList.add('hidden');ocrFilename=file.name;let worker=null;try{let canvases=file.type==='application/pdf'||/\.pdf$/i.test(file.name)?await ocrPdf(file):await ocrImage(file);$('ocrStatus').textContent='Deutsches OCR-Sprachmodell laden …';worker=await Tesseract.createWorker('deu',1,{logger:m=>{if(m.status)$('ocrStatus').textContent=m.status+(typeof m.progress==='number'?' · '+Math.round(m.progress*100)+' %':'')}});let texts=[];for(let i=0;i<canvases.length;i++){$('ocrStatus').textContent=`Seite ${i+1} von ${canvases.length} erkennen …`;let r=await worker.recognize(canvases[i]);texts.push(r.data.text)}let full=texts.join('\n\n--- Seitenwechsel ---\n\n');$('ocrText').value=full;let data=parseOCR(full);$('ocrDoctor').value=data.doctor;$('ocrDate').value=data.date;$('ocrNumber').value=data.number;$('ocrAmount').value=data.amount;$('ocrResult').classList.remove('hidden');$('ocrStatus').textContent='Texterkennung abgeschlossen. Bitte Angaben kontrollieren und übernehmen.'}catch(e){$('ocrStatus').textContent='Fehler: '+e.message}finally{if(worker)await worker.terminate();button.disabled=false}};
 $('ocrTransfer').onclick=()=>{let values={doctor:$('ocrDoctor').value,date:$('ocrDate').value,number:$('ocrNumber').value,amount:$('ocrAmount').value,filename:ocrFilename,notes:'Aus OCR übernommen; Originalbeleg prüfen'};openEditor('bill');for(let [key,val] of Object.entries(values)){let el=$('f_'+key);if(el)el.value=val}status('OCR-Angaben in Erfassungsmaske übertragen – noch nicht gespeichert. Bitte kontrollieren.')};
 
+const GOOGLE_CLIENT_ID =
+  '610669659345-l3sl1jo29arrv8rlduts9g3i66vu70v7.apps.googleusercontent.com';
+
+let googleAccessToken = null;
+let googleTokenClient = null;
+
+function initGoogleLogin() {
+  if (!window.google?.accounts?.oauth2) {
+    alert('Google-Anmeldung ist noch nicht geladen. Bitte Seite neu öffnen.');
+    return;
+  }
+
+  if (!googleTokenClient) {
+    googleTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: response => {
+        if (response.error) {
+          status('Google-Anmeldung fehlgeschlagen: ' + response.error);
+          return;
+        }
+
+        googleAccessToken = response.access_token;
+        status('Mit Google verbunden. Drive-Speicherung folgt.');
+        $('googleLogin').textContent = 'Google verbunden';
+      }
+    });
+  }
+
+  googleTokenClient.requestAccessToken({
+    prompt: googleAccessToken ? '' : 'consent'
+  });
+}
+
+$('googleLogin').onclick = initGoogleLogin;
+
 render();
 </script></body></html>
