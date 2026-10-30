@@ -1,18 +1,14 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arztrechnungen & Erstattungen V2.1 OCR</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arztrechnungen & Erstattungen – Testversion V2.3</title>
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#243348;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}header{background:#193e63;color:white;padding:20px 28px}header h1{margin:0;font-size:23px}header small{color:#d7e6f4}main{max-width:1300px;margin:auto;padding:20px}.bar,.panel{background:white;border:1px solid #dce4ed;border-radius:12px;padding:16px;margin-bottom:16px}.bar{display:flex;flex-wrap:wrap;gap:8px}button,.btn{border:1px solid #a6b7c8;border-radius:7px;background:white;padding:9px 13px;cursor:pointer;font:inherit;color:#193e63}button.primary{background:#205b8c;color:white;border-color:#205b8c}button:hover{filter:brightness(.96)}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{padding:16px;border-radius:10px;background:#eaf1f8}.metric strong{display:block;font-size:23px;margin-top:6px}.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:5px;margin:8px 0}label{font-weight:600;font-size:13px}input,select,textarea{font:inherit;width:100%;padding:9px;border:1px solid #b8c6d4;border-radius:7px;background:white}textarea{min-height:90px}.muted{color:#64748b;font-size:13px}.warn{background:#fff5e5;padding:12px;border-left:4px solid #bd7c16;margin:12px 0}.ok{color:#176548}.danger{color:#aa3030}.hidden{display:none}table{border-collapse:collapse;width:100%;font-size:13px}th,td{border-bottom:1px solid #e0e7ee;padding:9px 7px;text-align:left}th{background:#eaf1f8}td.num{text-align:right;font-variant-numeric:tabular-nums}.scroll{overflow:auto}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.pill{display:inline-block;border-radius:20px;background:#e5edf7;padding:3px 9px}h2{margin:0 0 12px;font-size:19px}h3{margin:18px 0 8px;font-size:16px}@media(max-width:800px){.grid,.row{grid-template-columns:1fr 1fr}}@media(max-width:540px){.grid,.row{grid-template-columns:1fr}header{padding:16px}main{padding:10px}}
-</style></head><body><header><h1>Arztrechnungen & Erstattungen</h1><small>Lokale Verwaltung · Beihilfe · Krankenversicherung · Original-PDFs bleiben im bisherigen Ordner</small></header>
-<main><div class="bar">
- <button id="googleLogin" type="button">
-  Mit Google verbinden
-</button>
-<button class="primary" id="newBill">+ Rechnung erfassen</button><button id="newPayment">+ Erstattung erfassen</button>
-<button id="openJson">JSON-Datenbank öffnen</button><button id="saveJson">JSON speichern</button><button id="saveAs">JSON sichern unter …</button><button id="csv">Excel-kompatible CSV</button><button id="jsonExport">JSON herunterladen</button>
-<input type="file" id="jsonInput" accept=".json,application/json" hidden>
-</div><div id="status" class="muted" role="status">Noch keine Datenbankdatei verbunden. Neue Eingaben bleiben zunächst nur im Browser-Arbeitsspeicher.</div>
-<div class="warn"><b>Stand V2.1:</b> OCR für eingescannte PDFs und Bilder ist ergänzt. Die Texterkennung läuft im Browser, benötigt aber beim Start Internet zum Laden der Programmbibliotheken und des deutschen Sprachmodells. Die Dokumente werden von dieser Anwendung nicht hochgeladen. Bitte erkannte Beträge und Daten vor dem Übernehmen prüfen. Der Export erfolgt vorerst als Excel-kompatible CSV.</div>
-<section class="panel" id="ocrPanel"><h2>PDF-Rechnung mit OCR auslesen</h2><p class="muted">Eingescannte PDF-Dateien sowie JPG/PNG. Die Erkennung erfolgt auf Deinem Gerät; die Originaldatei wird nicht in der Datenbank gespeichert. Beim ersten Aufruf werden OCR-Programmbibliotheken und das deutsche Sprachmodell aus dem Internet geladen.</p><div class="row"><div class="field"><label for="ocrFile">Rechnung auswählen</label><input id="ocrFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"></div><div class="field"><label for="ocrPages">PDF-Seiten auslesen (max. 8)</label><select id="ocrPages"><option value="1">Erste Seite</option><option value="2" selected>Erste 2 Seiten</option><option value="4">Erste 4 Seiten</option><option value="8">Erste 8 Seiten</option></select></div><div class="field"><label>&nbsp;</label><button id="runOCR" class="primary" type="button">Texterkennung starten</button></div></div><div id="ocrStatus" role="status" class="muted">Noch keine Datei ausgewählt.</div><div id="ocrResult" class="hidden"><h3>Erkannte Angaben – bitte kontrollieren</h3><div class="row"><div class="field"><label for="ocrDoctor">Arzt / Praxis</label><input id="ocrDoctor"></div><div class="field"><label for="ocrDate">Rechnungsdatum</label><input id="ocrDate" type="date"></div><div class="field"><label for="ocrNumber">Rechnungsnummer</label><input id="ocrNumber"></div><div class="field"><label for="ocrAmount">Rechnungsbetrag (€)</label><input id="ocrAmount" inputmode="decimal"></div></div><div class="actions"><button type="button" class="primary" id="ocrTransfer">Als neue Rechnung übernehmen</button></div><details><summary>Erkannten Text anzeigen / prüfen</summary><textarea id="ocrText" style="width:100%;min-height:240px" spellcheck="false"></textarea></details></div></section>
-<p class="muted">iCloud Drive: Du kannst die JSON-Datei dort ablegen und auf beiden Geräten auswählen. Eine automatische Synchronisierung oder ein automatisches Überschreiben derselben Datei durch diese HTML-Anwendung ist auf iOS noch nicht eingerichtet. Änderungen auf dem iPhone daher ausdrücklich als JSON-Datei sichern und keine parallelen Änderungen auf dem Mac vornehmen.</p>
+.save-state{position:sticky;top:0;z-index:5;padding:16px;margin:12px 0;font-size:19px;font-weight:700;border:2px solid #205b8c;border-radius:10px;background:#eaf1f8}.save-state[data-state="conflict"]{background:#fff0ed;border-color:#a32c20}.save-state[data-state="dirty"]{background:#fff5df;border-color:#9e6800}summary{cursor:pointer;font-weight:600;padding:8px}#status{padding:8px 0;overflow-wrap:anywhere}button:disabled{opacity:.5;cursor:wait}</style></head><body><header><h1>Arztrechnungen & Erstattungen</h1><small>Lokale Verwaltung · Beihilfe · Krankenversicherung · Original-PDFs bleiben im bisherigen Ordner</small></header>
+<main><section class="panel" id="releaseInfo"><b>V2.3 · Testversion · Build 2026-10-30.3</b><p class="muted">Nur /test/ und künstliche Daten. Gespeichert wird ausschließlich auf Deinen Klick.</p><p id="startupState" class="muted">Anwendung wird gestartet …</p></section>
+<div id="saveState" role="status" aria-live="polite" class="save-state">Noch nicht verbunden</div><div id="status" role="status" class="muted">Mit Google verbinden, einmal entsperren – die aktuelle Testdatenbank wird geladen.</div><div id="sessionStatus" class="muted"></div>
+<div class="bar" id="mainActions"><button id="googleLogin">Mit Google verbinden &amp; entsperren</button><button class="primary" id="newBill">+ Rechnung erfassen</button><button id="newPayment">+ Erstattung erfassen</button><button class="primary" id="saveDrive">Speichern</button></div>
+<details class="panel" id="backupMenu"><summary>Sicherung &amp; Sitzung</summary><p>Nur verschlüsselte Sicherungen. Wiederherstellung ersetzt zunächst nur den lokalen Stand. Erst „Speichern“ überträgt ihn nach Versionsprüfung in die Testdatenbank.</p><div class="actions"><button id="encryptedBackup">Verschlüsselte Sicherung herunterladen</button><button id="restoreEncrypted">Verschlüsselte Sicherung wiederherstellen</button><button id="loadDriveTest">Cloud-Stand neu laden / entsperren</button><button id="lockSession">Sitzung sperren</button></div><input id="encryptedInput" type="file" accept=".json" hidden></details>
+<details class="panel" id="diagnostics"><summary>Diagnose &amp; Ersteinrichtung</summary><p>Nur bei Bedarf. Der Schreibschutztest erstellt eine separate Prüfdatei. Die vorhandene V2.2.2-Testdatenbank wird weiterverwendet; Original und reale Daten bleiben getrennt.</p><div class="actions"><button id="probeDrive">Schreibschutz testen</button><button id="createDriveTest">Testdatenbank erstmalig anlegen</button><button id="checkDriveVersion">Dateiversion prüfen</button></div></details>
+<details class="panel"><summary>Rechnung aus PDF / Bild erfassen</summary><section class="panel" id="ocrPanel"><h2>PDF-Rechnung mit OCR auslesen</h2><p class="muted">Eingescannte PDF-Dateien sowie JPG/PNG. Die Erkennung erfolgt auf Deinem Gerät; die Originaldatei wird nicht in der Datenbank gespeichert. Beim ersten Aufruf werden OCR-Programmbibliotheken und das deutsche Sprachmodell aus dem Internet geladen.</p><div class="row"><div class="field"><label for="ocrFile">Rechnung auswählen</label><input id="ocrFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"></div><div class="field"><label for="ocrPages">PDF-Seiten auslesen (max. 8)</label><select id="ocrPages"><option value="1">Erste Seite</option><option value="2" selected>Erste 2 Seiten</option><option value="4">Erste 4 Seiten</option><option value="8">Erste 8 Seiten</option></select></div><div class="field"><label>&nbsp;</label><button id="runOCR" class="primary" type="button">Texterkennung starten</button></div></div><div id="ocrStatus" role="status" class="muted">Noch keine Datei ausgewählt.</div><div id="ocrResult" class="hidden"><h3>Erkannte Angaben – bitte kontrollieren</h3><div class="row"><div class="field"><label for="ocrDoctor">Arzt / Praxis</label><input id="ocrDoctor"></div><div class="field"><label for="ocrDate">Rechnungsdatum</label><input id="ocrDate" type="date"></div><div class="field"><label for="ocrNumber">Rechnungsnummer</label><input id="ocrNumber"></div><div class="field"><label for="ocrAmount">Rechnungsbetrag (€)</label><input id="ocrAmount" inputmode="decimal"></div></div><div class="actions"><button type="button" class="primary" id="ocrTransfer">Als neue Rechnung übernehmen</button></div><details><summary>Erkannten Text anzeigen / prüfen</summary><textarea id="ocrText" style="width:100%;min-height:240px" spellcheck="false"></textarea></details></div></section>
+</details>
 <div class="grid" id="metrics"></div>
 <section class="panel hidden" id="editor"><h2 id="editorTitle"></h2><form id="editForm"><div class="row" id="formFields"></div><div class="actions"><button class="primary" type="submit">Eintrag übernehmen</button><button type="button" id="cancel">Abbrechen</button></div></form></section>
 <section class="panel"><h2>Rechnungen und Erstattungen</h2><div class="row"><div class="field"><label for="search">Suche (Arzt, Nummer, Dateiname)</label><input id="search" placeholder="Suchen …"></div><div class="field"><label for="filter">Status</label><select id="filter"><option value="">Alle Rechnungen</option><option value="open">Noch offen</option><option value="done">Vollständig erstattet</option></select></div><div class="field"><label for="sort">Sortierung</label><select id="sort"><option value="date">Neueste zuerst</option><option value="doctor">Arzt / Praxis</option></select></div></div><div class="scroll"><table><thead><tr><th>Rechnungsdatum</th><th>Arzt / Praxis</th><th>Rechnungsnr.</th><th>Originaldatei</th><th>Betrag</th><th>Beihilfe</th><th>PKV</th><th>Offen</th><th>Aktionen</th></tr></thead><tbody id="rows"></tbody></table></div></section>
@@ -21,14 +17,17 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </main><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script><script>
 'use strict';
+if(!/\/test(?:\/|$)/.test(location.pathname)){document.getElementById('startupState').textContent='Diese Fassung ist ausschließlich für /test/ bestimmt. Keine Funktionen wurden aktiviert.';throw Error('Testfassung nur unter /test/ starten.');}
 const $=id=>document.getElementById(id),money=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n||0);
 let db={version:1,bills:[],payments:[]},fileHandle=null,dirty=false,editing=null;
 const id=()=>globalThis.crypto?.randomUUID?.()||('r'+Date.now()+Math.random().toString(36).slice(2));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const amount=s=>{let x=String(s||'').trim().replace(/\s|€/g,'');if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');let n=Number(x);return Number.isFinite(n)?Math.round(n*100)/100:NaN};
+const amount=s=>{let x=String(s||'').trim().replace(/\s|€|EUR/gi,'');if(x.includes(','))x=x.replace(/\./g,'').replace(',','.');let n=Number(x);return Number.isFinite(n)?Math.round(n*100)/100:NaN};
 function sums(b){let a=db.payments.filter(p=>p.billId===b.id),bh=a.filter(p=>p.type==='Beihilfe').reduce((v,p)=>v+p.amount,0),pkv=a.filter(p=>p.type==='PKV').reduce((v,p)=>v+p.amount,0);return {bh,pkv,open:Math.round((b.amount-bh-pkv)*100)/100}}
-function status(s){$('status').textContent=s+(dirty?' · Ungespeicherte Änderungen':'')}
-function touch(){dirty=true;status('Änderungen noch nicht in JSON gespeichert');render()}
+let syncState='idle';
+function paintState(){const state=driveUncertain||syncState==='conflict'?'conflict':driveBusy?'busy':dirty?'dirty':googleDriveFileId?'saved':'idle';$('saveState').dataset.state=state;$('saveState').textContent=({conflict:'Konflikt / unklarer Speicherstand – lokale Änderungen erhalten',busy:'Synchronisierung läuft …',dirty:'Ungespeicherte Änderungen',saved:syncState==='saved'?'Gespeichert · synchronisiert':'Synchronisiert · aktueller Cloud-Stand',idle:'Noch nicht verbunden'})[state]}
+function status(s){$('status').textContent=s;paintState()}
+function touch(){dirty=true;status('Änderungen lokal übernommen. Zum Übertragen auf Speichern klicken.');render()}
 function render(){let bills=db.bills,tot=bills.reduce((s,b)=>s+b.amount,0),refund=db.payments.reduce((s,p)=>s+p.amount,0),open=tot-refund;
 $('metrics').innerHTML=[['Rechnungen',bills.length],['Rechnungsbetrag',money(tot)],['Erstattungen',money(refund)],['Differenz / offen',money(open)]].map(([a,b])=>`<div class="metric"><span>${a}</span><strong>${b}</strong></div>`).join('');
 let q=$('search').value.toLowerCase(),f=$('filter').value,sort=$('sort').value;
@@ -49,18 +48,10 @@ $('editForm').onsubmit=e=>{e.preventDefault();let x=Object.fromEntries(new FormD
 document.addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;let d=b.dataset;if(d.edit)openEditor('bill',db.bills.find(x=>x.id===d.edit));if(d.pedit)openEditor('payment',db.payments.find(x=>x.id===d.pedit));if(d.del){if(!confirm('Rechnung und zugehörige Erstattungspositionen löschen?'))return;db.bills=db.bills.filter(x=>x.id!==d.del);db.payments=db.payments.filter(x=>x.billId!==d.del);touch()}if(d.pdel){if(!confirm('Erstattungsposition löschen?'))return;db.payments=db.payments.filter(x=>x.id!==d.pdel);touch()}});
 ['search','filter','sort'].forEach(k=>$(k).addEventListener('input',render));
 function validate(o){if(!o||!Array.isArray(o.bills)||!Array.isArray(o.payments))throw Error('Keine passende Rechnungsdatenbank.');for(let b of o.bills)if(!b.id||!Number.isFinite(b.amount))throw Error('Ungültige Rechnungsdaten.');for(let p of o.payments)if(!p.id||!Number.isFinite(p.amount))throw Error('Ungültige Erstattungsdaten.');return o}
-async function loadFile(file){if(dirty&&!confirm('Ungespeicherte Änderungen verwerfen und andere Datei öffnen?'))return;let data=validate(JSON.parse(await file.text()));db=data;dirty=false;$('editor').classList.add('hidden');render();status('Datenbank geöffnet: '+file.name)}
-$('openJson').onclick=async()=>{if(window.showOpenFilePicker){try{let [h]=await showOpenFilePicker({types:[{description:'JSON-Datenbank',accept:{'application/json':['.json']}}],multiple:false});let file=await h.getFile();await loadFile(file);fileHandle=h;status('Datei verbunden: '+h.name)}catch(e){if(e.name!=='AbortError')alert('Öffnen fehlgeschlagen: '+e.message)}}else $('jsonInput').click()};
-$('jsonInput').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{await loadFile(f);fileHandle=null;status('Datei importiert: '+f.name+' · Speichern als Download')}catch(err){alert(err.message)}e.target.value=''};
 const blob=(s,type)=>new Blob([s],{type});
 function download(data,name,type){let a=document.createElement('a'),u=URL.createObjectURL(blob(data,type));a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 const json=()=>JSON.stringify(db,null,2);
-async function save(forceNew=false){try{if(window.showSaveFilePicker&&(forceNew||!fileHandle)){fileHandle=await showSaveFilePicker({suggestedName:'Arztrechnungen_Erstattungen.json',types:[{description:'JSON',accept:{'application/json':['.json']}}]})}
-if(fileHandle){let w=await fileHandle.createWritable();await w.write(json());await w.close();dirty=false;status('Gespeichert in '+fileHandle.name+' · '+new Date().toLocaleTimeString('de-DE'));return}
-download(json(),'Arztrechnungen_Erstattungen.json','application/json');dirty=false;status('JSON-Download gestartet. Bitte Datei sicher ablegen.')}catch(e){if(e.name!=='AbortError')alert('Speichern fehlgeschlagen: '+e.message)}}
-$('saveJson').onclick=()=>save();$('saveAs').onclick=()=>save(true);$('jsonExport').onclick=()=>download(json(),'Arztrechnungen_Erstattungen_Sicherung.json','application/json');
-$('csv').onclick=()=>{let headers=['Rechnungsdatum','Arzt / Praxis','Rechnungsnummer','Originaldatei','Rechnungsbetrag','Beihilfe','PKV','Differenz / offen','Bemerkung'];let lines=[headers,...db.bills.map(b=>{let s=sums(b);return [b.date,b.doctor,b.number,b.filename,b.amount,s.bh,s.pkv,s.open,b.notes]})];let csv=lines.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');download('\ufeff'+csv,'Arztrechnungen_Uebersicht.csv','text/csv;charset=utf-8')};
-window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+window.addEventListener('beforeunload',e=>{if(dirty||editing){e.preventDefault();e.returnValue=''}});
 
 // OCR works locally after downloading public JS/wasm and language assets; no document upload.
 let ocrFilename='';
@@ -85,484 +76,91 @@ async function ocrPdf(file){if(!window.pdfjsLib)throw Error('PDF-Bibliothek konn
 $('runOCR').onclick=async()=>{let file=$('ocrFile').files[0];if(!file)return alert('Bitte eine Rechnung als PDF oder Bild auswählen.');if(!window.Tesseract)return alert('OCR-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen und Seite neu öffnen.');let button=$('runOCR');button.disabled=true;$('ocrResult').classList.add('hidden');ocrFilename=file.name;let worker=null;try{let canvases=file.type==='application/pdf'||/\.pdf$/i.test(file.name)?await ocrPdf(file):await ocrImage(file);$('ocrStatus').textContent='Deutsches OCR-Sprachmodell laden …';worker=await Tesseract.createWorker('deu',1,{logger:m=>{if(m.status)$('ocrStatus').textContent=m.status+(typeof m.progress==='number'?' · '+Math.round(m.progress*100)+' %':'')}});let texts=[];for(let i=0;i<canvases.length;i++){$('ocrStatus').textContent=`Seite ${i+1} von ${canvases.length} erkennen …`;let r=await worker.recognize(canvases[i]);texts.push(r.data.text)}let full=texts.join('\n\n--- Seitenwechsel ---\n\n');$('ocrText').value=full;let data=parseOCR(full);$('ocrDoctor').value=data.doctor;$('ocrDate').value=data.date;$('ocrNumber').value=data.number;$('ocrAmount').value=data.amount;$('ocrResult').classList.remove('hidden');$('ocrStatus').textContent='Texterkennung abgeschlossen. Bitte Angaben kontrollieren und übernehmen.'}catch(e){$('ocrStatus').textContent='Fehler: '+e.message}finally{if(worker)await worker.terminate();button.disabled=false}};
 $('ocrTransfer').onclick=()=>{let values={doctor:$('ocrDoctor').value,date:$('ocrDate').value,number:$('ocrNumber').value,amount:$('ocrAmount').value,filename:ocrFilename,notes:'Aus OCR übernommen; Originalbeleg prüfen'};openEditor('bill');for(let [key,val] of Object.entries(values)){let el=$('f_'+key);if(el)el.value=val}status('OCR-Angaben in Erfassungsmaske übertragen – noch nicht gespeichert. Bitte kontrollieren.')};
 
-const GOOGLE_CLIENT_ID =
-  '610669659345-l3sl1jo29arrv8rlduts9g3i66vu70v7.apps.googleusercontent.com';
+// Test release: only the dedicated v2 test file is writable. Original file is never updated.
+const GOOGLE_CLIENT_ID='610669659345-l3sl1jo29arrv8rlduts9g3i66vu70v7.apps.googleusercontent.com';
+const WORK_NAME='Arztrechnungen_TEST_Schreibtest_v222.json';
+const encoder=new TextEncoder(),decoder=new TextDecoder();
+let googleAccessToken=null,googleTokenClient=null,tokenExpires=0;
+let googleDriveFileId=null,googleDriveVersion=null,driveETag=null,driveEnvelope=null;
+let driveBusy=false,writeVerified=false,driveUncertain=false;
+function detachDrive(){clearSession();googleDriveFileId=null;googleDriveVersion=null;driveETag=null;driveEnvelope=null;driveUncertain=false}
+function bytesToBase64(bytes){let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s)}
+function base64ToBytes(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+// The only retained unlock material is a non-extractable PBKDF2 CryptoKey in this tab.
+let sessionBase=null,sessionFileId=null,sessionEpoch=0;
+function sessionStatus(){ $('sessionStatus').textContent=sessionBase?'Sitzung entsperrt · Schlüssel nur im Arbeitsspeicher · keine dauerhafte Passwortspeicherung.':'Sitzung gesperrt · Passwort nur beim Entsperren.'; }
+function clearSession(){sessionBase=null;sessionFileId=null;sessionEpoch++;sessionStatus()}
+async function passwordBase(password){return crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveKey'])}
+async function deriveFromBase(base,salt,iterations=600000){return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function deriveKey(password,salt,iterations=600000){return deriveFromBase(await passwordBase(password),salt,iterations)}
+async function encryptWithBase(data,base){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await deriveFromBase(base,salt);return {format:'arztrechnungen-encrypted',version:1,algorithm:'AES-256-GCM',kdf:'PBKDF2-SHA256',iterations:600000,salt:bytesToBase64(salt),iv:bytesToBase64(iv),data:bytesToBase64(new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,encoder.encode(JSON.stringify(data)))))}}
+async function encryptDatabase(data,password){return encryptWithBase(data,await passwordBase(password))}
+async function decryptWithBase(e,base){if(!e||e.format!=='arztrechnungen-encrypted'||e.version!==1||e.algorithm!=='AES-256-GCM'||e.kdf!=='PBKDF2-SHA256'||!Number.isInteger(e.iterations)||e.iterations<600000||e.iterations>2000000)throw Error('Unbekanntes oder unsicheres Verschlüsselungsformat.');const salt=base64ToBytes(e.salt),iv=base64ToBytes(e.iv);if(salt.length!==16||iv.length!==12)throw Error('Ungültige Verschlüsselungsparameter.');try{const key=await deriveFromBase(base,salt,e.iterations);return JSON.parse(decoder.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,base64ToBytes(e.data))))}catch{throw Error('Passwort falsch oder verschlüsselte Datei beschädigt.')}}
+async function decryptDatabase(e,password){return decryptWithBase(e,await passwordBase(password))}
+async function unlockEnvelope(envelope,fid,label){const epoch=sessionEpoch;let base=sessionFileId===fid?sessionBase:null;
+ if(!base){let pw=await passwordDialog(label);if(pw===null)return null;try{base=await passwordBase(pw)}finally{pw=null}}
+ try{const data=cloudDatabase(await decryptWithBase(envelope,base));if(epoch!==sessionEpoch)throw Error('Sitzung wurde zwischenzeitlich gesperrt. Bitte erneut entsperren.');return {base,data,epoch}}
+ catch(e){if(epoch===sessionEpoch)clearSession();throw e}}
+function retainSession(unlocked,fid){if(unlocked.epoch!==sessionEpoch)throw Error('Sitzung wurde zwischenzeitlich gesperrt.');sessionBase=unlocked.base;sessionFileId=fid;sessionStatus()}
+function canonical(value){if(Array.isArray(value))return value.map(canonical);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])]));return value}
+function sameEnvelope(a,b){return JSON.stringify(canonical(a))===JSON.stringify(canonical(b))}
+// Whitelist: no attachments, PDF bytes, OCR images or arbitrary imported properties can reach Drive.
+function cloudDatabase(value){validate(value);const seen=new Set();const text=(v)=>typeof v==='string'?v:'';const rows=(list,keys)=>list.map(r=>{if(typeof r.id!=='string'||!r.id||seen.has(r.id)||!Number.isFinite(r.amount)||r.amount<0||!/^\d{4}-\d{2}-\d{2}$/.test(r.date))throw Error('Ungültiger Datensatz: ID, Datum oder Betrag.');seen.add(r.id);const out={id:r.id,amount:r.amount};for(const k of keys)out[k]=text(r[k]);return out});const bills=rows(value.bills,['doctor','date','number','filename','notes']);const payments=rows(value.payments,['billId','type','date','number','notes']);for(const p of payments)if(!bills.some(b=>b.id===p.billId)||!['Beihilfe','PKV'].includes(p.type))throw Error('Ungültige Erstattungszuordnung.');return {version:1,bills,payments}}
+function passwordDialog(label,repeat=false){return new Promise(resolve=>{const d=document.createElement('dialog');d.innerHTML='<form method="dialog"><h2></h2><p>Das Passwort wird nur zum Entsperren verwendet. Für diese Sitzung kann ein nicht exportierbarer Schlüssel im Arbeitsspeicher bleiben. Es gibt keine Passwort-Wiederherstellung.</p><label>Passwort<input type="password" autocomplete="off" required></label>'+(repeat?'<label>Passwort wiederholen<input type="password" autocomplete="off" required minlength="12"></label>':'')+'<p role="status"></p><button value="ok">Weiter</button> <button type="button">Abbrechen</button></form>';d.querySelector('h2').textContent=label;document.body.append(d);const inputs=d.querySelectorAll('input');if(repeat)inputs[0].minLength=12;let result=null;d.querySelector('form').onsubmit=e=>{e.preventDefault();if(repeat&&inputs[0].value!==inputs[1].value){d.querySelector('[role=status]').textContent='Die Passwörter stimmen nicht überein.';return}result=inputs[0].value;d.close()};d.querySelector('[type=button]').onclick=()=>d.close();d.onclose=()=>{inputs.forEach(i=>i.value='');d.remove();resolve(result)};d.showModal();inputs[0].focus()})}
+function initGoogleLogin(){if(!window.google?.accounts?.oauth2)return alert('Google-Anmeldung noch nicht geladen. Verbindung prüfen.');if(driveBusy)return;if((dirty||editing)&&!confirm('Google-Verbindung wechseln? Lokale Änderungen bleiben erhalten; vor dem Laden sichern.'))return;if(!googleTokenClient)googleTokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.file',callback:async r=>{if(r.error)return status('Google-Anmeldung fehlgeschlagen: '+r.error);googleAccessToken=r.access_token;tokenExpires=Date.now()+Number(r.expires_in||3600)*1000;if(dirty||editing){googleDriveFileId=null;googleDriveVersion=null;driveETag=null;driveEnvelope=null;sessionFileId=null;status('Lokale Änderungen erhalten. Vor dem Laden im Menü verschlüsselt sichern.');return}writeVerified=false;detachDrive();$('googleLogin').textContent='Google erneut verbinden';await exclusive(loadWorking);},error_callback:()=>status('Anmeldefenster geschlossen oder blockiert. Bitte erneut verbinden.')});googleTokenClient.requestAccessToken({prompt:'select_account'})}
+async function request(url,options={}){if(!googleAccessToken||Date.now()>=tokenExpires)throw Error('Google-Anmeldung abgelaufen. Erneut verbinden und Testdatenbank laden.');let r;try{r=await fetch(url,{...options,cache:'no-store',headers:{Authorization:'Bearer '+googleAccessToken,...options.headers},signal:AbortSignal.timeout(45000)})}catch{throw Error('Netzwerkfehler oder Zeitüberschreitung. Bei Schreibvorgängen ist der Ausgang unklar: nicht blind wiederholen; Sicherung herunterladen und neu laden.')}if(!r.ok){const messages={401:'Google-Anmeldung abgelaufen. Bitte erneut verbinden.',403:'Drive-Zugriff verweigert oder Kontingent erreicht.',404:'Drive-Datei nicht gefunden oder nicht zugänglich.',409:'Drive-Konflikt. Sicherung erstellen und neu laden.',412:'Konflikt: Die Datei wurde auf einem anderen Gerät geändert. Lokale Änderungen bleiben erhalten. Verschlüsselt sichern, dann neu laden.',429:'Zu viele Anfragen. Später erneut versuchen.'};const e=Error(messages[r.status]||'Drive-Fehler HTTP '+r.status+'. Bei Schreibfehlern zuerst neu laden.');e.httpStatus=r.status;throw e}return r}
+const api='https://www.googleapis.com/drive/v2/files/';
+const FILE_FIELDS='id,title,etag,version,labels(trashed)';
+async function metadata(fid){return (await request(api+encodeURIComponent(fid)+'?updateViewedDate=false&fields='+FILE_FIELDS)).json()}
+function checkedMeta(m){if(!m.etag||m.etag.startsWith('W/')||!m.version||m.labels?.trashed)throw Error('Drive liefert keine nutzbare Dateiversion/ETag. Schreiben gesperrt.');return m}
+// Retrying reads is safe; conditional uploads are never automatically retried.
+async function readConsistent(fid){for(let attempt=0;attempt<3;attempt++){const a=checkedMeta(await metadata(fid));const e=await (await request(api+encodeURIComponent(fid)+'?alt=media&updateViewedDate=false')).json();const b=checkedMeta(await metadata(fid));if(a.etag===b.etag&&String(a.version)===String(b.version))return {meta:b,envelope:e}}throw Error('Datei wurde während des Ladens mehrfach geändert. Bitte erneut laden.');}
+async function findWorking(){const files=[];let page='';do{const q=encodeURIComponent("title = '"+WORK_NAME+"' and trashed = false and 'me' in owners");const r=await(await request('https://www.googleapis.com/drive/v2/files?q='+q+'&maxResults=100&fields=items(id,title),nextPageToken'+(page?'&pageToken='+encodeURIComponent(page):''))).json();files.push(...(r.items||[]));page=r.nextPageToken||''}while(page);if(files.length>1)throw Error('Mehrere Schreibtest-Dateien gefunden. Keine wird automatisch ausgewählt oder überschrieben.');return files[0]||null}
+async function createFile(name,envelope){const boundary='db_'+crypto.randomUUID();const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({title:name,mimeType:'application/json'})+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(envelope)+'\r\n--'+boundary+'--';return (await request('https://www.googleapis.com/upload/drive/v2/files?uploadType=multipart&fields='+FILE_FIELDS,{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+boundary},body})).json()}
+async function putFile(fid,envelope,etag){return (await request('https://www.googleapis.com/upload/drive/v2/files/'+encodeURIComponent(fid)+'?uploadType=media&newRevision=true&fields='+FILE_FIELDS,{method:'PUT',headers:{'Content-Type':'application/json','If-Match':etag},body:JSON.stringify(envelope)})).json()}
+async function exclusive(fn){if(driveBusy)return;driveBusy=true;const ids=['googleLogin','lockSession','probeDrive','createDriveTest','loadDriveTest','checkDriveVersion','saveDrive','encryptedBackup','restoreEncrypted'];paintState();ids.forEach(id=>$(id).disabled=true);try{await fn()}catch(e){if(/Konflikt|Inhalt wurde verändert|andere Version/.test(e.message))syncState='conflict';status(e.message);alert(e.message)}finally{driveBusy=false;ids.forEach(id=>$(id).disabled=false);paintState()}}
+function testData(){return {version:1,bills:[{id:'test-001',doctor:'Testpraxis',date:'2026-10-30',number:'TEST-001',amount:123.45,filename:'',notes:'Nur künstliche Testdaten'}],payments:[]}}
+async function probeWriteProtection(){writeVerified=false;const e=await encryptDatabase(testData(),crypto.randomUUID());const f=checkedMeta(await createFile('Arztrechnungen_SCHREIBSCHUTZTEST_'+crypto.randomUUID()+'.json',e));const updated=checkedMeta(await putFile(f.id,e,f.etag));if(updated.etag===f.etag)throw Error('ETag wurde nicht aktualisiert. Schreiben bleibt gesperrt.');try{await putFile(f.id,e,f.etag)}catch(err){if(err.httpStatus===412){writeVerified=true;status('Schreibschutz bestätigt: gültiger Schreibzugriff erfolgreich, veralteter ETag mit HTTP 412 abgewiesen.');return}throw err}throw Error('Drive hat einen veralteten ETag akzeptiert! Schreiben bleibt gesperrt.')}
+function adoptSnapshot(fid,snapshot){googleDriveFileId=fid;googleDriveVersion=String(snapshot.meta.version);driveETag=snapshot.meta.etag;driveEnvelope=snapshot.envelope}
+function checkTarget(meta,fid){if(meta.id!==fid||meta.title!==WORK_NAME)throw Error('Drive-Zieldatei geändert. Schreiben gesperrt.');}
+async function createWorking(){if(await findWorking())throw Error('Schreibtest-Datei existiert bereits. Bitte laden.');const epoch=sessionEpoch;let pw=await passwordDialog('Neue getrennte Testdatenbank anlegen',true);if(pw===null)return;let base;try{base=await passwordBase(pw)}finally{pw=null}const data=testData(),e=await encryptWithBase(data,base);if(epoch!==sessionEpoch)throw Error('Sitzung gesperrt. Anlage abgebrochen.');
+ const f=checkedMeta(await createFile(WORK_NAME,e));const actual=await readConsistent(f.id);checkTarget(actual.meta,f.id);if(!sameEnvelope(e,actual.envelope))throw Error('Anlage nicht eindeutig bestätigt. Nicht erneut anlegen, sondern Testdatenbank laden.');
+ if(epoch!==sessionEpoch)throw Error('Datei angelegt, Sitzung inzwischen gesperrt. Testdatenbank laden.');
+ retainSession({base,epoch},f.id);
+ status('Neue verschlüsselte Testdatei angelegt und nachgeprüft. Sitzung entsperrt. Testdatenbank wird geladen.');await loadWorking();}
+async function loadWorking(){const before=json(),editorBefore=editing;if((dirty||editing)&&!confirm('Lokale Änderungen verwerfen? Bei Bedarf vorher verschlüsselte Sicherung herunterladen.'))return;const f=await findWorking();if(!f)throw Error('Keine neue Schreibtest-Datei gefunden. Zuerst einmal anlegen.');const r=await readConsistent(f.id);checkTarget(r.meta,f.id);const unlocked=await unlockEnvelope(r.envelope,f.id,'Testdatenbank für diese Sitzung entsperren');if(!unlocked)return;
+ if(json()!==before||editing!==editorBefore)throw Error('Während des Ladens wurden lokale Daten geändert. Laden abgebrochen.');retainSession(unlocked,f.id);db=unlocked.data;dirty=false;fileHandle=null;adoptSnapshot(f.id,r);driveUncertain=false;syncState='synced';$('editor').classList.add('hidden');editing=null;render();status('Testdatenbank geladen · Drive-Version '+googleDriveVersion+' · Sitzung entsperrt');}
+async function checkGoogleDriveVersion(){if(!googleDriveFileId||!driveETag||!driveEnvelope)throw Error('Zuerst die neue Testdatenbank laden.');const fid=googleDriveFileId,expected=driveEnvelope;const actual=await readConsistent(fid);checkTarget(actual.meta,fid);
+ // A changed ETag/version alone is not proof of a changed encrypted database.
+ // Rebase only when ALL envelope values equal the previously loaded ciphertext.
+ if(!sameEnvelope(actual.envelope,expected))throw Error('Drive-Version geändert: verschlüsselter Inhalt wurde verändert. Lokale Änderungen verschlüsselt sichern, dann neu laden.');
+ if(fid!==googleDriveFileId||!sameEnvelope(expected,driveEnvelope))throw Error('Lokale Drive-Verbindung inzwischen geändert.');
+ adoptSnapshot(fid,actual);return actual.meta;}
+async function saveWorking(){if(editing)throw Error('Bitte den offenen Eintrag zuerst übernehmen oder abbrechen.');if(driveUncertain)throw Error('Ausgang des letzten Schreibversuchs unklar. Zuerst verschlüsselt sichern und neu laden.');if(!googleDriveFileId||!driveEnvelope)throw Error('Zuerst die neue Testdatenbank laden.');
+ const fid=googleDriveFileId,unlocked=await unlockEnvelope(driveEnvelope,fid,'Testdatenbank für diese Sitzung entsperren');if(!unlocked)return;retainSession(unlocked,fid);
+ const snapshot=JSON.stringify(cloudDatabase(db)),before=json(),encrypted=await encryptWithBase(JSON.parse(snapshot),unlocked.base);
+ // Refresh the conditional-write token ONLY after proving unchanged ciphertext.
+ await checkGoogleDriveVersion();const etag=driveETag,oldVersion=googleDriveVersion;
+ if(fid!==googleDriveFileId||unlocked.epoch!==sessionEpoch)throw Error('Sitzung oder Drive-Ziel geändert. Speichern abgebrochen.');
+ let submitted=false;try{submitted=true;const result=checkedMeta(await putFile(fid,encrypted,etag));driveUncertain=true;checkTarget(result,fid);const actual=await readConsistent(fid);checkTarget(actual.meta,fid);
+ // Response ETags can differ after incidental metadata changes. Verify stored bytes,
+ // then adopt a fresh, consistently read ETag. Never accept a different ciphertext.
+ if(!sameEnvelope(actual.envelope,encrypted))throw Error('Nachprüfung: Drive enthält bereits eine andere Version. Lokale Daten bleiben erhalten.');
+ if(String(actual.meta.version)===oldVersion&&actual.meta.etag===etag)throw Error('Drive-Dateiversion wurde nicht aktualisiert.');
+ adoptSnapshot(fid,actual);driveUncertain=false;dirty=json()!==before;syncState='saved';
+ status('Cloud-Speicherung erfolgreich · verschlüsselt gespeichert und erneut gelesen · Drive-Version '+googleDriveVersion+(dirty?' · Neuere lokale Änderungen noch speichern.':''));
+ }catch(e){if(submitted&&e.httpStatus!==412)driveUncertain=true;dirty=true;throw e}}
+async function encryptedBackup(){let base=sessionBase;const epoch=sessionEpoch;
+ if(!base&&googleDriveFileId&&driveEnvelope){const unlocked=await unlockEnvelope(driveEnvelope,googleDriveFileId,'Testdatenbank für diese Sitzung entsperren');if(!unlocked)return;retainSession(unlocked,googleDriveFileId);base=unlocked.base}
+ if(!base){let pw=await passwordDialog('Sitzung für verschlüsselte Sicherung entsperren',true);if(pw===null)return;try{base=await passwordBase(pw)}finally{pw=null}if(epoch!==sessionEpoch)throw Error('Sitzung inzwischen gesperrt.');sessionBase=base;sessionFileId=null;sessionStatus()}
+ const e=await encryptWithBase(cloudDatabase(db),base);if(epoch!==sessionEpoch)throw Error('Sitzung inzwischen gesperrt. Sicherung abgebrochen.');download(JSON.stringify(e),'Arztrechnungen_Test_Sicherung_'+Date.now()+'.enc.json','application/json');status('Verschlüsselte Sicherung ausdrücklich zum Download bereitgestellt. Dateiablage prüfen.');}
+$('googleLogin').onclick=initGoogleLogin;
+$('lockSession').onclick=()=>{if(driveBusy)return;clearSession();status('Sitzung gesperrt. Lokale Eingaben bleiben sichtbar; zum Entschlüsseln oder Speichern erneut entsperren.');};
+window.addEventListener('pagehide',clearSession);
+
+$('probeDrive').onclick=()=>exclusive(probeWriteProtection);$('createDriveTest').onclick=()=>exclusive(createWorking);$('loadDriveTest').onclick=()=>exclusive(loadWorking);$('checkDriveVersion').onclick=()=>exclusive(async()=>{await checkGoogleDriveVersion();status('Drive-Dateiversion unverändert: '+googleDriveVersion)});$('saveDrive').onclick=()=>exclusive(saveWorking);$('encryptedBackup').onclick=()=>exclusive(encryptedBackup);$('restoreEncrypted').onclick=()=>$('encryptedInput').click();
+$('encryptedInput').onchange=()=>exclusive(async()=>{const f=$('encryptedInput').files[0];$('encryptedInput').value='';if(!f)return;const before=json();if(dirty&&!confirm('Lokale Änderungen durch Sicherung ersetzen?'))return;const envelope=JSON.parse(await f.text());const unlocked=await unlockEnvelope(envelope,null,'Verschlüsselte Sicherung für diese Sitzung entsperren');if(!unlocked)return;if(json()!==before)throw Error('Lokale Daten während des Öffnens geändert. Vorgang abgebrochen.');if(!googleDriveFileId||!driveEnvelope)throw Error('Vor Wiederherstellung zuerst die Testdatenbank laden.');db=unlocked.data;dirty=true;editing=null;$('editor').classList.add('hidden');render();status('Sicherung lokal wiederhergestellt · ungespeichert. Speichern prüft den geladenen Cloud-Stand; bei Konflikt bleibt diese Wiederherstellung erhalten.')});
+render();paintState();sessionStatus();
+$('startupState').textContent='Anwendung vollständig gestartet · V2.3 · ausschließlich manuelles Speichern.';
 
-let googleAccessToken = null;
- 
-let googleDriveFileId = null;
-let googleDriveVersion = null;
-
-let googleTokenClient = null;
-
-function initGoogleLogin() {
-  if (!window.google?.accounts?.oauth2) {
-    alert('Google-Anmeldung ist noch nicht geladen. Bitte Seite neu öffnen.');
-    return;
-  }
-
-  if (!googleTokenClient) {
-    googleTokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file',
-      callback: response => {
-        if (response.error) {
-          status('Google-Anmeldung fehlgeschlagen: ' + response.error);
-          return;
-        }
-
-        googleAccessToken = response.access_token;
-        status('Mit Google verbunden. Drive-Speicherung folgt.');
-        $('googleLogin').textContent = 'Google verbunden';
-      }
-    });
-  }
-
-  googleTokenClient.requestAccessToken({
-    prompt: googleAccessToken ? '' : 'consent'
-  });
-}
-
-$('googleLogin').onclick = initGoogleLogin;
-
-async function testGoogleDrive() {
-  if (!googleAccessToken) {
-    alert('Bitte zuerst mit Google verbinden.');
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      'https://www.googleapis.com/drive/v3/files?pageSize=10&fields=files(id,name),nextPageToken',
-      {
-        headers: {
-          Authorization: 'Bearer ' + googleAccessToken
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('HTTP ' + response.status);
-    }
-
-    status('Google Drive API erfolgreich verbunden.');
-    alert('Google Drive ist erreichbar!');
-  } catch (error) {
-    status('Google Drive: ' + error.message);
-    alert('Verbindung fehlgeschlagen: ' + error.message);
-  }
-}
-
-$('googleLogin').insertAdjacentHTML(
-  'afterend',
-  '<button id="testDrive" type="button">Drive-Verbindung testen</button>'
-);
-
-$('testDrive').onclick = testGoogleDrive;
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
-
-function bytesToBase64(bytes) {
-  return btoa(String.fromCharCode(...bytes));
-}
-
-function base64ToBytes(value) {
-  return Uint8Array.from(atob(value), c => c.charCodeAt(0));
-}
-
-async function deriveKey(password, salt) {
-  const baseKey = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(password),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  );
-
-  return crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt,
-      iterations: 600000,
-      hash: 'SHA-256'
-    },
-    baseKey,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt']
-  );
-}
-
-async function encryptDatabase(database, password) {
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const key = await deriveKey(password, salt);
-
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encoder.encode(JSON.stringify(database))
-  );
-
-  return {
-    format: 'arztrechnungen-encrypted',
-    version: 1,
-    algorithm: 'AES-256-GCM',
-    kdf: 'PBKDF2-SHA256',
-    iterations: 600000,
-    salt: bytesToBase64(salt),
-    iv: bytesToBase64(iv),
-    data: bytesToBase64(new Uint8Array(ciphertext))
-  };
-}
-
-async function decryptDatabase(encrypted, password) {
-  if (
-    encrypted.format !== 'arztrechnungen-encrypted' ||
-    encrypted.version !== 1
-  ) {
-    throw new Error('Unbekanntes Datenbankformat.');
-  }
-
-  const salt = base64ToBytes(encrypted.salt);
-  const iv = base64ToBytes(encrypted.iv);
-  const key = await deriveKey(password, salt);
-
-  const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    base64ToBytes(encrypted.data)
-  );
-
-  return JSON.parse(decoder.decode(plaintext));
-}
-
-async function testEncryption() {
-  const password = 'NurEinTestpasswort-2026!';
-  const original = {
-    version: 1,
-    bills: [{
-      id: 'test-001',
-      doctor: 'Testpraxis',
-      date: '2026-10-30',
-      amount: 123.45
-    }],
-    payments: []
-  };
-
-  try {
-    const encrypted = await encryptDatabase(original, password);
-    const decrypted = await decryptDatabase(encrypted, password);
-
-    if (JSON.stringify(original) !== JSON.stringify(decrypted)) {
-      throw new Error('Die entschlüsselten Daten stimmen nicht überein.');
-    }
-
-    alert('Verschlüsselung und Entschlüsselung erfolgreich!');
-  } catch (error) {
-    alert('Verschlüsselungstest fehlgeschlagen: ' + error.message);
-  }
-}
-
-$('googleLogin').insertAdjacentHTML(
-  'afterend',
-  '<button id="testEncryption" type="button">Verschlüsselung testen</button>'
-);
-
-$('testEncryption').onclick = testEncryption;
-
-async function createEncryptedTestDatabase() {
-  if (!googleAccessToken) {
-    alert('Bitte zuerst mit Google verbinden.');
-    return;
-  }
-
-  const password = prompt(
-    'Testpasswort für die verschlüsselte Datenbank eingeben:'
-  );
-
-  if (password === null) return;
-
-  if (password.length < 12) {
-    alert('Bitte mindestens 12 Zeichen verwenden.');
-    return;
-  }
-
-  const testDatabase = {
-    version: 1,
-    bills: [{
-      id: 'test-001',
-      doctor: 'Testpraxis',
-      date: '2026-10-30',
-      number: 'TEST-001',
-      amount: 123.45,
-      filename: '',
-      notes: 'Testdatensatz'
-    }],
-    payments: []
-  };
-
-  try {
-    const encrypted = await encryptDatabase(testDatabase, password);
-
-    const metadata = {
-      name: 'Arztrechnungen_TEST_verschluesselt.json',
-      mimeType: 'application/json'
-    };
-
-    const boundary = 'arztrechnungen_boundary_2026';
-
-    const body =
-      '--' + boundary + '\r\n' +
-      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-      JSON.stringify(metadata) + '\r\n' +
-      '--' + boundary + '\r\n' +
-      'Content-Type: application/json\r\n\r\n' +
-      JSON.stringify(encrypted) + '\r\n' +
-      '--' + boundary + '--';
-
-    const response = await fetch(
-      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + googleAccessToken,
-          'Content-Type': 'multipart/related; boundary=' + boundary
-        },
-        body
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        'Google Drive HTTP ' + response.status +
-        ': ' + (await response.text()).slice(0, 300)
-      );
-    }
-
-    const result = await response.json();
-
-    status('Verschlüsselte Testdatenbank in Google Drive erstellt.');
-    alert(
-      'Testdatei erfolgreich angelegt!\n\n' +
-      'Dateiname: ' + result.name +
-      '\nDatei-ID: ' + result.id
-    );
-  } catch (error) {
-    alert('Fehler beim Anlegen: ' + error.message);
-  }
-}
-
-$('googleLogin').insertAdjacentHTML(
-  'afterend',
-  '<button id="createDriveTest" type="button">Testdatenbank anlegen</button>'
-);
-
-$('createDriveTest').onclick = createEncryptedTestDatabase;
-
-async function loadEncryptedTestDatabase() {
-  if (!googleAccessToken) {
-    alert('Bitte zuerst mit Google verbinden.');
-    return;
-  }
-
-  try {
-    const query = encodeURIComponent(
-      "name = 'Arztrechnungen_TEST_verschluesselt.json' and trashed = false"
-    );
-
-    const response = await fetch(
-      'https://www.googleapis.com/drive/v3/files?q=' +
-      query + '&fields=files(id,name),nextPageToken&pageSize=100',
-      {
-        headers: {
-          Authorization: 'Bearer ' + googleAccessToken
-        }
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Dateisuche fehlgeschlagen: HTTP ' + response.status);
-    }
-
-    const result = await response.json();
-
-    if (result.files.length !== 1) {
-      throw new Error(
-        result.files.length === 0
-          ? 'Keine Testdatenbank gefunden.'
-          : 'Mehrere Testdatenbanken gefunden. Bitte zuerst Duplikate klären.'
-      );
-    }
-
-    
-const fileId = result.files[0].id;
-   
-const metadataResponse = await fetch(
-  'https://www.googleapis.com/drive/v3/files/' +
-  encodeURIComponent(fileId) +
-  '?fields=id,version,modifiedTime',
-  {
-    headers: {
-      Authorization: 'Bearer ' + googleAccessToken
-    }
-  }
-);
-
-if (!metadataResponse.ok) {
-  throw new Error('Dateiversion konnte nicht ermittelt werden.');
-}
-
-const fileMetadata = await metadataResponse.json();
-
-
-
-    const fileResponse = await fetch(
-      'https://www.googleapis.com/drive/v3/files/' +
-      encodeURIComponent(fileId) + '?alt=media',
-      {
-        headers: {
-          Authorization: 'Bearer ' + googleAccessToken
-        }
-      }
-    );
-
-    if (!fileResponse.ok) {
-      throw new Error('Datei konnte nicht geladen werden.');
-    }
-
-    const encrypted = await fileResponse.json();
-
-    const password = prompt('Testpasswort eingeben:');
-    if (password === null) return;
-
-    
-const decrypted = validate(
-  await decryptDatabase(encrypted, password)
-);
-
-// Bereits vorhandene, ungespeicherte Änderungen schützen.
-if (dirty && !confirm(
-  'Ungespeicherte Änderungen verwerfen und ' +
-  'die Datenbank aus Google Drive laden?'
-)) {
-  return;
-}
-
-// Entschlüsselte Daten in die Rechnungsverwaltung übernehmen.
-db = decrypted;
-dirty = false;
-   
-
-googleDriveFileId = fileId;
-googleDriveVersion = fileMetadata.version;
-
-
-fileHandle = null;
-
-// Eine eventuell geöffnete Erfassungsmaske schließen.
-$('editor').classList.add('hidden');
-editing = null;
-
-// Rechnungsübersicht und Kennzahlen aktualisieren.
-
-render();
-
-alert(
-  'Testdatenbank erfolgreich entschlüsselt!\n\n' +
-  'Rechnungen: ' + decrypted.bills.length +
-  '\nArzt: ' + decrypted.bills[0]?.doctor +
-  '\nBetrag: ' + money(decrypted.bills[0]?.amount)
-);
-} catch (error) {
-  alert('Fehler beim Laden: ' + error.message);
-}
-}
-
-$('googleLogin').insertAdjacentHTML(
-  'afterend',
-  '<button id="loadDriveTest" type="button">Testdatenbank laden</button>'
-);
-
-$('loadDriveTest').onclick = loadEncryptedTestDatabase;
-
-async function checkGoogleDriveVersion() {
-  if (!googleAccessToken || !googleDriveFileId || !googleDriveVersion) {
-    throw new Error('Bitte zuerst die Testdatenbank laden.');
-  }
-
-  const response = await fetch(
-    'https://www.googleapis.com/drive/v3/files/' +
-    encodeURIComponent(googleDriveFileId) +
-    '?fields=id,version',
-    {
-      headers: {
-        Authorization: 'Bearer ' + googleAccessToken
-      }
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error('Dateiversion konnte nicht geprüft werden.');
-  }
-
-  const metadata = await response.json();
-
-  if (String(metadata.version) !== String(googleDriveVersion)) {
-    throw new Error(
-      'Die Datenbank wurde zwischenzeitlich verändert. ' +
-      'Bitte neu laden, bevor Du speicherst.'
-    );
-  }
-
-  return true;
-}
-
-$('googleLogin').insertAdjacentHTML(
-  'afterend',
-  '<button id="checkDriveVersion" type="button">Dateiversion prüfen</button>'
-);
-
-$('checkDriveVersion').onclick = async () => {
-  try {
-    await checkGoogleDriveVersion();
-    alert('Versionsprüfung erfolgreich! Die Datei ist unverändert.');
-  } catch (error) {
-    alert('Versionsprüfung: ' + error.message);
-  }
-};
-$('googleLogin').insertAdjacentHTML(
-  'afterend',
-  '<button id="saveDrive" type="button">In Google Drive speichern</button>'
-);
-
-$('saveDrive').onclick = async () => {
-  if (!googleAccessToken || !googleDriveFileId) {
-    alert('Bitte zuerst mit Google verbinden und die Testdatenbank laden.');
-    return;
-  }
-
-  try {
-    await checkGoogleDriveVersion();
-
-    const password = prompt('Passwort zum Verschlüsseln der Datenbank:');
-    if (password === null) return;
-    if (!password) {
-      alert('Bitte ein Passwort eingeben.');
-      return;
-    }
-
-    const encrypted = await encryptDatabase(db, password);
-
-    alert(
-      'Speicherung vorbereitet!\n\n' +
-      'Die Datenbank wurde verschlüsselt und die Dateiversion geprüft.\n' +
-      'Es wurden noch keine Daten hochgeladen.'
-    );
-  } catch (error) {
-    alert('Speicherung nicht möglich: ' + error.message);
-  }
-};
-render();
 </script></body></html>
