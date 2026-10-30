@@ -519,5 +519,19 @@ async function checkGoogleDriveVersion() {
   return true;
 }
 
+$('googleLogin').insertAdjacentHTML(
+  'afterend',
+  '<button id="checkDriveVersion" type="button">Dateiversion prüfen</button>'
+);
+
+$('checkDriveVersion').onclick = async () => {
+  try {
+    await checkGoogleDriveVersion();
+    alert('Versionsprüfung erfolgreich! Die Datei ist unverändert.');
+  } catch (error) {
+    alert('Versionsprüfung: ' + error.message);
+  }
+};
+
 render();
 </script></body></html>
