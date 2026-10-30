@@ -537,8 +537,32 @@ $('googleLogin').insertAdjacentHTML(
   '<button id="saveDrive" type="button">In Google Drive speichern</button>'
 );
 
-$('saveDrive').onclick = () => {
-  alert('Der verschlüsselte Speichervorgang wird im nächsten Schritt eingerichtet.');
+$('saveDrive').onclick = async () => {
+  if (!googleAccessToken || !googleDriveFileId) {
+    alert('Bitte zuerst mit Google verbinden und die Testdatenbank laden.');
+    return;
+  }
+
+  try {
+    await checkGoogleDriveVersion();
+
+    const password = prompt('Passwort zum Verschlüsseln der Datenbank:');
+    if (password === null) return;
+    if (!password) {
+      alert('Bitte ein Passwort eingeben.');
+      return;
+    }
+
+    const encrypted = await encryptDatabase(db, password);
+
+    alert(
+      'Speicherung vorbereitet!\n\n' +
+      'Die Datenbank wurde verschlüsselt und die Dateiversion geprüft.\n' +
+      'Es wurden noch keine Daten hochgeladen.'
+    );
+  } catch (error) {
+    alert('Speicherung nicht möglich: ' + error.message);
+  }
 };
 render();
 </script></body></html>
