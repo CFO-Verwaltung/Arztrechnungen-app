@@ -234,5 +234,39 @@ async function decryptDatabase(encrypted, password) {
   return JSON.parse(decoder.decode(plaintext));
 }
 
+async function testEncryption() {
+  const password = 'NurEinTestpasswort-2026!';
+  const original = {
+    version: 1,
+    bills: [{
+      id: 'test-001',
+      doctor: 'Testpraxis',
+      date: '2026-10-30',
+      amount: 123.45
+    }],
+    payments: []
+  };
+
+  try {
+    const encrypted = await encryptDatabase(original, password);
+    const decrypted = await decryptDatabase(encrypted, password);
+
+    if (JSON.stringify(original) !== JSON.stringify(decrypted)) {
+      throw new Error('Die entschlüsselten Daten stimmen nicht überein.');
+    }
+
+    alert('Verschlüsselung und Entschlüsselung erfolgreich!');
+  } catch (error) {
+    alert('Verschlüsselungstest fehlgeschlagen: ' + error.message);
+  }
+}
+
+$('googleLogin').insertAdjacentHTML(
+  'afterend',
+  '<button id="testEncryption" type="button">Verschlüsselung testen</button>'
+);
+
+$('testEncryption').onclick = testEncryption;
+
 render();
 </script></body></html>
