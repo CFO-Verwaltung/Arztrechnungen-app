@@ -532,6 +532,13 @@ $('checkDriveVersion').onclick = async () => {
     alert('Versionsprüfung: ' + error.message);
   }
 };
+$('googleLogin').insertAdjacentHTML(
+  'afterend',
+  '<button id="saveDrive" type="button">In Google Drive speichern</button>'
+);
 
+$('saveDrive').onclick = () => {
+  alert('Der verschlüsselte Speichervorgang wird im nächsten Schritt eingerichtet.');
+};
 render();
 </script></body></html>
