@@ -357,5 +357,82 @@ $('googleLogin').insertAdjacentHTML(
 
 $('createDriveTest').onclick = createEncryptedTestDatabase;
 
+async function loadEncryptedTestDatabase() {
+  if (!googleAccessToken) {
+    alert('Bitte zuerst mit Google verbinden.');
+    return;
+  }
+
+  try {
+    const query = encodeURIComponent(
+      "name = 'Arztrechnungen_TEST_verschluesselt.json' and trashed = false"
+    );
+
+    const response = await fetch(
+      'https://www.googleapis.com/drive/v3/files?q=' +
+      query + '&fields=files(id,name),nextPageToken&pageSize=100',
+      {
+        headers: {
+          Authorization: 'Bearer ' + googleAccessToken
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Dateisuche fehlgeschlagen: HTTP ' + response.status);
+    }
+
+    const result = await response.json();
+
+    if (result.files.length !== 1) {
+      throw new Error(
+        result.files.length === 0
+          ? 'Keine Testdatenbank gefunden.'
+          : 'Mehrere Testdatenbanken gefunden. Bitte zuerst Duplikate klären.'
+      );
+    }
+
+    const fileId = result.files[0].id;
+
+    const fileResponse = await fetch(
+      'https://www.googleapis.com/drive/v3/files/' +
+      encodeURIComponent(fileId) + '?alt=media',
+      {
+        headers: {
+          Authorization: 'Bearer ' + googleAccessToken
+        }
+      }
+    );
+
+    if (!fileResponse.ok) {
+      throw new Error('Datei konnte nicht geladen werden.');
+    }
+
+    const encrypted = await fileResponse.json();
+
+    const password = prompt('Testpasswort eingeben:');
+    if (password === null) return;
+
+    const decrypted = await decryptDatabase(encrypted, password);
+    validate(decrypted);
+
+    alert(
+      'Testdatenbank erfolgreich entschlüsselt!\n\n' +
+      'Rechnungen: ' + decrypted.bills.length +
+      '\nArzt: ' + decrypted.bills[0]?.doctor +
+      '\nBetrag: ' + money(decrypted.bills[0]?.amount)
+    );
+  } catch (error) {
+    alert('Fehler beim Laden: ' + error.message);
+  }
+}
+
+$('googleLogin').insertAdjacentHTML(
+  'afterend',
+  '<button id="loadDriveTest" type="button">Testdatenbank laden</button>'
+);
+
+$('loadDriveTest').onclick = loadEncryptedTestDatabase;
+
 render();
 </script></body></html>
