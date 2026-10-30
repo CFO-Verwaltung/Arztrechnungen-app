@@ -17,7 +17,6 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </main><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script><script>
 'use strict';
-if(!/\/test(?:\/|$)/.test(location.pathname)){document.getElementById('startupState').textContent='Diese Fassung ist ausschließlich für /test/ bestimmt. Keine Funktionen wurden aktiviert.';throw Error('Testfassung nur unter /test/ starten.');}
 const $=id=>document.getElementById(id),money=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n||0);
 let db={version:1,bills:[],payments:[]},fileHandle=null,dirty=false,editing=null;
 const id=()=>globalThis.crypto?.randomUUID?.()||('r'+Date.now()+Math.random().toString(36).slice(2));
