@@ -268,5 +268,94 @@ $('googleLogin').insertAdjacentHTML(
 
 $('testEncryption').onclick = testEncryption;
 
+async function createEncryptedTestDatabase() {
+  if (!googleAccessToken) {
+    alert('Bitte zuerst mit Google verbinden.');
+    return;
+  }
+
+  const password = prompt(
+    'Testpasswort für die verschlüsselte Datenbank eingeben:'
+  );
+
+  if (password === null) return;
+
+  if (password.length < 12) {
+    alert('Bitte mindestens 12 Zeichen verwenden.');
+    return;
+  }
+
+  const testDatabase = {
+    version: 1,
+    bills: [{
+      id: 'test-001',
+      doctor: 'Testpraxis',
+      date: '2026-10-30',
+      number: 'TEST-001',
+      amount: 123.45,
+      filename: '',
+      notes: 'Testdatensatz'
+    }],
+    payments: []
+  };
+
+  try {
+    const encrypted = await encryptDatabase(testDatabase, password);
+
+    const metadata = {
+      name: 'Arztrechnungen_TEST_verschluesselt.json',
+      mimeType: 'application/json'
+    };
+
+    const boundary = 'arztrechnungen_boundary_2026';
+
+    const body =
+      '--' + boundary + '\r\n' +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) + '\r\n' +
+      '--' + boundary + '\r\n' +
+      'Content-Type: application/json\r\n\r\n' +
+      JSON.stringify(encrypted) + '\r\n' +
+      '--' + boundary + '--';
+
+    const response = await fetch(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + googleAccessToken,
+          'Content-Type': 'multipart/related; boundary=' + boundary
+        },
+        body
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        'Google Drive HTTP ' + response.status +
+        ': ' + (await response.text()).slice(0, 300)
+      );
+    }
+
+    const result = await response.json();
+
+    status('Verschlüsselte Testdatenbank in Google Drive erstellt.');
+    alert(
+      'Testdatei erfolgreich angelegt!\n\n' +
+      'Dateiname: ' + result.name +
+      '\nDatei-ID: ' + result.id
+    );
+  } catch (error) {
+    alert('Fehler beim Anlegen: ' + error.message);
+  }
+}
+
+$('googleLogin').insertAdjacentHTML(
+  'afterend',
+  '<button id="createDriveTest" type="button">Testdatenbank anlegen</button>'
+);
+
+$('createDriveTest').onclick = createEncryptedTestDatabase;
+
 render();
 </script></body></html>
