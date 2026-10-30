@@ -396,7 +396,9 @@ async function loadEncryptedTestDatabase() {
       );
     }
 
-    const fileId = result.files[0].id;
+    
+const fileId = result.files[0].id;
+
 
     const fileResponse = await fetch(
       'https://www.googleapis.com/drive/v3/files/' +
@@ -433,6 +435,10 @@ if (dirty && !confirm(
 // Entschlüsselte Daten in die Rechnungsverwaltung übernehmen.
 db = decrypted;
 dirty = false;
+   
+googleDriveFileId = fileId;
+googleDriveVersion = null;
+
 fileHandle = null;
 
 // Eine eventuell geöffnete Erfassungsmaske schließen.
