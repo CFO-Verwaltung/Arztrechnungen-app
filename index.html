@@ -471,37 +471,6 @@ render();
 status('Verschlüsselte Testdatenbank aus Google Drive geladen.');
 ```
 
-Lasse den darunterliegenden `alert(...)`-Block unverändert.
-
-Speichere über **Commit changes** und lade die <Link url="https://cfo-verwaltung.github.io/Arztrechnungen-app/" title="Rechnungsverwaltung"/> neu.
-
-Melde Dich mit Google an und wähle **„Testdatenbank laden“**. Gib Dein Testpasswort ein.
-
-Jetzt sollte die Testrechnung nicht nur im Hinweisfenster erscheinen, sondern auch in der eigentlichen Rechnungsübersicht:
-
-<box border radius="lg" padding={3} gap={2}>
-  <text color="secondary" weight="medium" size="xs">Erwartetes Testergebnis</text>
-  <grid columns={2} gap={3}>
-    <grid-item>
-      <text color="secondary" size="xs">Rechnungen</text>
-      <title size="xl" color="default" tabularNums>1</title>
-    </grid-item>
-    <grid-item>
-      <text color="secondary" size="xs">Rechnungsbetrag</text>
-      <title size="xl" color="default" tabularNums>123,45 €</title>
-    </grid-item>
-  </grid>
-  <divider color="subtle"/>
-  <row justify="between" align="center">
-    **Testpraxis**
-    <text weight="medium" tabularNums>123,45 €</text>
-  </row>
-  <caption>Rechnungsnummer TEST-001</caption>
-</box>
-
-**Wichtig:** Wir arbeiten weiterhin ausschließlich mit Testdaten. Änderungen an dieser Rechnung werden noch nicht nach Google Drive zurückgeschrieben. Die bisherigen Schaltflächen „JSON speichern“ und „JSON sichern unter“ erzeugen gegebenenfalls weiterhin Downloads.
-
-Sag mir bitte, ob die Testrechnung jetzt in der Übersicht erscheint. Danach bauen wir das verschlüsselte Zurückspeichern mit Versionsprüfung ein.
 
     alert(
       'Testdatenbank erfolgreich entschlüsselt!\n\n' +
