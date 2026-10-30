@@ -466,22 +466,19 @@ $('editor').classList.add('hidden');
 editing = null;
 
 // Rechnungsübersicht und Kennzahlen aktualisieren.
+
 render();
 
-status('Verschlüsselte Testdatenbank aus Google Drive geladen.');
-```
-
-
-    alert(
-      'Testdatenbank erfolgreich entschlüsselt!\n\n' +
-      'Rechnungen: ' + decrypted.bills.length +
-      '\nArzt: ' + decrypted.bills[0]?.doctor +
-      '\nBetrag: ' + money(decrypted.bills[0]?.amount)
-    );
-  } catch (error) {
-    alert('Fehler beim Laden: ' + error.message);
-  }
+alert(
+  'Testdatenbank erfolgreich entschlüsselt!\n\n' +
+  'Rechnungen: ' + decrypted.bills.length +
+  '\nArzt: ' + decrypted.bills[0]?.doctor +
+  '\nBetrag: ' + money(decrypted.bills[0]?.amount)
+);
+} catch (error) {
+  alert('Fehler beim Laden: ' + error.message);
 }
+
 
 $('googleLogin').insertAdjacentHTML(
   'afterend',
